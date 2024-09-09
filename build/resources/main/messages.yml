@@ -1,0 +1,3 @@
+inafk:
+  type: "actionbar" #actionbar or chat
+  message: "&aReceiving rewards in &2&n%time%"

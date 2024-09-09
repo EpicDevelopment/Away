@@ -1,0 +1,27 @@
+shop:
+  items: #types: fill (fill item), item (purchasable item), leave (Close gui)
+    x:
+      type: FILL
+      material: GRAY_STAINED_GLASS_PANE
+      name: "&7"
+      lore: []
+    a:
+      type: ITEM
+      material: DIAMOND
+      name: "&b1x Diamond"
+      price: 10
+      lore:
+        - "cool diamond"
+        - ""
+        - "&fPrice: &e10"
+    b:
+      type: LEAVE
+      material: barrier
+      name: "&bGo back"
+  gui:
+    title: "Afk shop"
+    format:
+      - "XXXXXXXXX"
+      - "XAXXXXXXX"
+      - "XXXXXXXXX"
+      - "XXXXBXXXX"
