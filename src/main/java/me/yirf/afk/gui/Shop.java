@@ -1,34 +1,45 @@
 package me.yirf.afk.gui;
 
+import com.samjakob.spigui.buttons.SGButton;
+import com.samjakob.spigui.item.ItemBuilder;
+import com.samjakob.spigui.menu.SGMenu;
 import me.yirf.afk.Afk;
-import me.yirf.afk.Interface.Color;
+import me.yirf.afk.data.Coins;
 import me.yirf.afk.data.Config;
+import me.yirf.afk.data.Messages;
 import me.yirf.afk.data.Shopper;
-import me.yirf.afk.gui.manager.ClickType;
-import me.yirf.afk.gui.manager.GuiBuilder;
+import me.yirf.afk.enums.ClickType;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
-public class Shop{
-    private Afk afk;
-    private Inventory afkShop;
-    private Config config;
-    private FileConfiguration configYaml;
-    private Shopper shopper;
+import static me.yirf.afk.Afk.spiGUI;
 
-    public Shop(Afk afk, Config config, Shopper shopper) {
+public class Shop {
+
+    Afk afk;
+    Inventory afkShop;
+    Config config;
+    FileConfiguration configYaml;
+    Shopper shopper;
+    Coins coins;
+    Messages messages;
+
+    public Shop(Afk afk, Config config, Shopper shopper, Coins coins, Messages messages) {
         this.afk = afk;
         this.config = config;
         this.configYaml = afk.getConfigYaml();
         this.shopper = shopper;
+        this.coins = coins;
+        this.messages = messages;
     }
 
     private ItemStack buildItem(String pH) {
@@ -42,51 +53,126 @@ public class Shop{
         return item;
     }
 
-    public void buildShop() {
+    public void openShop(Player player) {
+
         String title = shopper.getString("shop.gui.title");
-        GuiBuilder guiBuilder = new GuiBuilder().setTitle(title);
-
-        List<String> format = shopper.getStringList("shop.gui.format");
-        for (String s : format) {
-            guiBuilder.addRow(s);
+        List<String> guiConfig = shopper.getStringList("shop.gui.format");
+        if (guiConfig == null) {
+            afk.getLogger().warning("Unable to find shop.gui.format in shop.yml!");
+            return;
         }
-        ConfigurationSection sec = configYaml.getConfigurationSection("shop.items");
-        Set<String> pH = sec.getKeys(false);
-        for (String s : pH) {
-            guiBuilder.setPlaceholder(s, buildItem(s));
+        if (title.isEmpty()) {
+            afk.getLogger().warning("Unable to find shop.gui.title in shop.yml!");
+            title = "Afk Shop";
         }
-        afkShop = guiBuilder.build(afk);
 
+        int totalSlots = guiConfig.size() * 9;
+        if (totalSlots % 9 != 0 || totalSlots / 9 > 6) {
+            afk.getLogger().warning("Your gui format for shop.yml isn't proper.");
+            return;
+        }
+        int rows = totalSlots / 9;
+        SGMenu gui = spiGUI.create(title, rows);
 
+        int totalLength = guiConfig.stream().mapToInt(String::length).sum();
 
-//        ConfigurationSection sec = configYaml.getConfigurationSection("shop.items");
-//        for (String s : sec.getKeys(false)) {
-//            ClickType.clickTypes type = config;
-//            if (config.getString(s).equalsIgnoreCase("type")) {
-//                if
-//            }
-//        }
+        char[] slots = new char[totalLength];
+
+        int index = 0;
+        for (String s : guiConfig) {
+            for (char c : s.toCharArray()) {
+                slots[index] = c;
+                index++;
+            }
+        }
+        for (int i = 0; i < slots.length; i++) {
+            char slotKey = slots[i];
+            String path = "shop.items." + slotKey;
+            ClickType clickType = ClickType.fromString(shopper.getString(path + ".type"));
+            Material material = org.bukkit.Material.getMaterial(shopper.getString(path + ".material"));
+            String name = shopper.getString(path + ".name");
+            List<String> lore = shopper.getStringList(path + ".lore");
+            int price = shopper.getInt(path + ".price");
+            SGButton button;
+            ItemStack item;
+            if (material.isAir() == true) {
+                item = new ItemBuilder(material).build();
+            } else {
+                item = new ItemBuilder(material)
+                        .name(name)
+                        .lore(lore)
+                        .amount(shopper.getInt(path + ".amount"))
+                        .build();
+            }
+
+            button = new SGButton(item);
+
+            if (ClickType.fromString(shopper.getString(path + ".type")) != null) {
+                button.withListener(inventoryClickEvent -> {
+
+                    int bal = 0;
+                    if (clickType.equals(ClickType.COMMAND) || clickType.equals(ClickType.ITEM)) {
+                        try {
+                            bal = coins.getCoins(afk.getServer().getOfflinePlayer(player.getUniqueId()));
+
+                        } catch (SQLException ex) {
+                            afk.getLogger().warning("Unable to get " + player.getName() + "'s coins!");
+                            ex.printStackTrace();
+                            return;
+                        }
+                    }
+                    if (bal < price) {
+                        player.sendMessage(messages.getString("shop.notEnough"));
+                        return;
+                    }
+
+                    if (clickType.equals(ClickType.COMMAND)) {
+                        player.sendMessage(messages.getString("shop.purchase").replaceAll("%price%", price + ""));
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), shopper.getString(path + ".command").replace("{player}", player.getName()));
+                        player.closeInventory();
+                        removeCoins(player, price);
+                        return;
+                    }
+                    if (clickType.equals(ClickType.ITEM)) {
+                        player.sendMessage(messages.getString("shop.purchase").replaceAll("%price%", price + ""));
+                        removeCoins(player, price);
+                        player.getInventory().addItem(item);
+                    }
+                    else if (clickType.equals(ClickType.LEAVE)) {
+                        player.closeInventory();
+                        return;
+                    }
+
+                    String stringType = shopper.getString(path + ".type");
+                    if (ClickType.fromString(stringType).equals(ClickType.COMMAND)) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), shopper.getString(path + ".command").replace("{player}", player.getName()));
+                    }
+                });
+            }
+            gui.setButton(i, button);
+
+            if (shopper.getString(path + ".type").equals("air")) {
+                SGButton air = new SGButton(
+                        new ItemBuilder(Material.AIR)
+                                .build()
+                );
+                gui.setButton(i, air);
+            }
+        }
+        player.openInventory(gui.getInventory());
     }
-//        ItemStack xItem = new ItemStack(Material.DIAMOND);
-//        ItemStack oItem = new ItemStack(Material.EMERALD);
-//
-//        shopgui = new GuiBuilder()
-//                .setPlaceholder('X', xItem)
-//                .setPlaceholder('O', oItem)
-//                .setTitle("Shop GUI")
-//                .addRow("XXXXXXXXX")
-//                .addRow("XXXXOXXXX")
-//                .addRow("XXXXXXXXX")
-//                .setClickHandler('X', (player, event) -> {
-//                    player.sendMessage("You clicked a diamond!");
-//                })
-//                .setClickHandler('O', (player, event) -> {
-//                    player.sendMessage("You clicked an emerald!");
-//                })
-//                .build(afk);
-//    }
 
-    public Inventory getShop() {
-        return afkShop;
+    private void removeCoins(Player player, int amount) {
+        try {
+            if (!coins.playerExists(player.getUniqueId())) {
+                coins.registerPlayer(player);
+            }
+            int newBalance = coins.getCoins(player) - amount;
+            coins.setCoins(player, newBalance);
+        } catch (SQLException ex) {
+            player.sendMessage(ChatColor.RED + "An error occurred while removing coins please report this!");
+            ex.printStackTrace();
+        }
     }
 }
+

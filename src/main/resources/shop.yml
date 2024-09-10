@@ -4,24 +4,45 @@ shop:
       type: FILL
       material: GRAY_STAINED_GLASS_PANE
       name: "&7"
+      amount: 1
+      lore: []
+    z:
+      type: FILL
+      material: DIRT
+      name: "&7"
+      amount: 1
       lore: []
     a:
       type: ITEM
       material: DIAMOND
       name: "&b1x Diamond"
       price: 10
+      amount: 1
       lore:
-        - "cool diamond"
+        - "&fcool diamond"
         - ""
         - "&fPrice: &e10"
     b:
+      type: COMMAND
+      command: "broadcast {player} is cool!"
+      material: COMMAND_BLOCK
+      name: "&aBroadcast your name"
+      price: 5
+      amount: 1
+      lore:
+        - "&fBroadcast your name in chat!"
+        - ""
+        - "&fPrice: &e5"
+    l:
       type: LEAVE
-      material: barrier
-      name: "&bGo back"
+      material: ARROW
+      name: "&bLeave"
+      amount: 1
+      lore: []
   gui:
     title: "Afk shop"
     format:
-      - "XXXXXXXXX"
-      - "XAXXXXXXX"
-      - "XXXXXXXXX"
-      - "XXXXBXXXX"
+      - "xxxxxxxxx"
+      - "xabzzzzzx"
+      - "xzzzzzzzx"
+      - "xxxxlxxxx"

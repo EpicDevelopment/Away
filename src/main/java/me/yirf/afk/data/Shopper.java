@@ -2,10 +2,7 @@ package me.yirf.afk.data;
 
 import me.yirf.afk.Afk;
 import me.yirf.afk.Interface.Color;
-import me.yirf.afk.gui.manager.ClickType;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import me.yirf.afk.enums.ClickType;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -23,8 +20,8 @@ public class Shopper implements Color {
 
     public Shopper(Afk afk) {
         this.afk = afk;
-        this.shopper = afk.getMessagesYaml();
-        this.shopperFile = afk.getMessagesFile();
+        this.shopper = afk.getShopperYaml();
+        this.shopperFile = afk.getShopperFile();
     }
 
     public String getString(String path) {
@@ -36,8 +33,7 @@ public class Shopper implements Color {
     }
 
     public List<String> getStringList(String path) {
-        List<String> list = (List<String>) shopper.getList(path);
-        assert list != null;
+        List<String> list = shopper.getStringList(path);
         list = list.stream()
                 .map(translate::format)
                 .collect(Collectors.toList());
@@ -53,7 +49,7 @@ public class Shopper implements Color {
 
     public void reload() {
         if (shopperFile == null) {
-            shopperFile = new File(afk.getDataFolder(), "messages.yml");
+            shopperFile = new File(afk.getDataFolder(), "shop.yml");
         }
         shopper = YamlConfiguration.loadConfiguration(shopperFile);
     }

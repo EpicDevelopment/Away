@@ -1,4 +1,14 @@
-region: "afk"
+region:
+  locations:
+    world: "world"
+    loc1:
+      x: 0
+      y: 0
+      z: 0
+    loc2:
+      x: 0
+      y: 0
+      z: 0
 timer: 30 #in minutes
 warp:
   x: 0

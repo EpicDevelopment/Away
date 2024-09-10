@@ -1,3 +1,6 @@
 inafk:
   type: "actionbar" #actionbar or chat
   message: "&aReceiving rewards in &2&n%time%"
+shop:
+  notEnough: "&cYou don't have enough money for that!"
+  purchase: "You purchased something from afkshop for &e%price% coins&f!"

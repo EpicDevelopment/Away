@@ -1,7 +1,9 @@
 package me.yirf.afk.commands;
 
 import me.yirf.afk.Afk;
+import me.yirf.afk.data.Coins;
 import me.yirf.afk.data.Config;
+import me.yirf.afk.data.Messages;
 import me.yirf.afk.data.Shopper;
 import me.yirf.afk.gui.Shop;
 import org.bukkit.Bukkit;
@@ -16,26 +18,28 @@ import java.io.IOException;
 
 public class ShopCommand implements CommandExecutor {
 
-    private Config config;
-    private Shopper shopper;
-    private Afk afk;
-    private Shop shop;
+    Config config;
+    Shopper shopper;
+    Afk afk;
+    Shop shop;
+    Coins coins;
+    Messages messages;
 
 
-    public ShopCommand(Afk afk, Config config, Shopper shopper) {
+    public ShopCommand(Afk afk, Config config, Shopper shopper, Coins coins, Messages messages) {
         this.afk = afk;
         this.config = config;
         this.shopper = shopper;
-        shop = new Shop(afk, config, shopper);
+        this.coins = coins;
+        this.messages = messages;
+        shop = new Shop(afk, config, shopper, coins, messages);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        Player player = (Player) commandSender;
-        Inventory shopGui = shop.getShop();
-        Bukkit.broadcastMessage(shopGui.toString() + "nigga2");
+        Player player = (Player) commandSender;;
         try {
-            player.openInventory(shopGui);
+            shop.openShop(player);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

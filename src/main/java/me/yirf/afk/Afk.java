@@ -1,5 +1,8 @@
 package me.yirf.afk;
 
+import com.samjakob.spigui.SpiGUI;
+import me.yirf.afk.events.custom.Listener.PlayerRegionHandler;
+import me.yirf.afk.events.custom.Listener.RegionRelatedEventsHandler;
 import me.yirf.afk.commands.Admin;
 import me.yirf.afk.commands.ShopCommand;
 import me.yirf.afk.commands.Teleport;
@@ -7,6 +10,7 @@ import me.yirf.afk.data.*;
 import me.yirf.afk.gui.Shop;
 import me.yirf.afk.listeners.Join;
 import me.yirf.afk.listeners.Quit;
+import me.yirf.afk.managers.ValuesManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,26 +22,33 @@ import java.util.concurrent.TimeUnit;
 
 public final class Afk extends JavaPlugin {
 
-    private File configFile = new File(getDataFolder(), "config.yml");
-    private FileConfiguration configYaml = YamlConfiguration.loadConfiguration(configFile);
-    private File messagesFile = new File(getDataFolder(), "messages.yml");
-    private FileConfiguration messagesYaml = YamlConfiguration.loadConfiguration(messagesFile);
-    private File shopperFile = new File(getDataFolder(), "shop.yml");
-    private FileConfiguration shopperYaml = YamlConfiguration.loadConfiguration(messagesFile);
-    private Coins coins;
+    public static SpiGUI spiGUI;
+    public static Afk instance;
+
+    File configFile = new File(getDataFolder(), "config.yml");
+    FileConfiguration configYaml = YamlConfiguration.loadConfiguration(configFile);
+    File messagesFile = new File(getDataFolder(), "messages.yml");
+    FileConfiguration messagesYaml = YamlConfiguration.loadConfiguration(messagesFile);
+    File shopperFile = new File(getDataFolder(), "shop.yml");
+    FileConfiguration shopperYaml = YamlConfiguration.loadConfiguration(shopperFile);
+    Coins coins;
+    Group group;
 
     @Override
     public void onEnable() {
+        instance = this;
+        spiGUI = new SpiGUI(this);
         Config config = new Config(this);
         Messages messages = new Messages(this);
         Shopper shopper = new Shopper(this);
-        Group group = new Group(config);
-        Shop shop = new Shop(this, config, shopper);
-        shop.buildShop();
+        group = new Group(config);
+        Shop shop = new Shop(this, config, shopper, coins, messages);
 
         loadData();
-        loadCommands(config, messages, shopper);
-        loadListeners(group);
+        loadCommands(config, messages, shopper, coins);
+        loadListeners(group, config);
+        ValuesManager.load();
+        schedule();
     }
 
     @Override
@@ -80,27 +91,30 @@ public final class Afk extends JavaPlugin {
         }
     }
 
-    private void loadCommands(Config config, Messages messages, Shopper shopper) {
+    private void loadCommands(Config config, Messages messages, Shopper shopper, Coins coins) {
         this.getCommand("afk").setExecutor(new Teleport(config));
-        this.getCommand("away").setExecutor(new Admin(coins, config, messages));
-        this.getCommand("afkshop").setExecutor(new ShopCommand(this, config, shopper));
+        this.getCommand("away").setExecutor(new Admin(coins, config, messages, shopper));
+        this.getCommand("afkshop").setExecutor(new ShopCommand(this, config, shopper, coins, messages));
     }
 
-    private void loadListeners(Group group) {
+    private void loadListeners(Group group, Config config) {
         this.getServer().getPluginManager().registerEvents(new Join(coins), this);
         this.getServer().getPluginManager().registerEvents(new Quit(coins, group), this);
+        getServer().getPluginManager().registerEvents(new PlayerRegionHandler(group), this);
+        getServer().getPluginManager().registerEvents(new RegionRelatedEventsHandler(group), this);
     }
 
     public void schedule() {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this,
                 this::run,
-                TimeUnit.SECONDS.toSeconds(30) * 20,
-                TimeUnit.SECONDS.toSeconds(30) * 20
+                TimeUnit.SECONDS.toSeconds(5) * 20,
+                TimeUnit.SECONDS.toSeconds(5) * 20
                 );
     }
 
     public void run() {
         Bukkit.broadcastMessage("test sched");
+        Bukkit.broadcastMessage(group.group.toString() + " group");
     }
 
     public FileConfiguration getConfigYaml() {
@@ -117,5 +131,13 @@ public final class Afk extends JavaPlugin {
 
     public File getMessagesFile() {
         return messagesFile;
+    }
+
+    public File getShopperFile(){
+        return shopperFile;
+    }
+
+    public FileConfiguration getShopperYaml(){
+        return shopperYaml;
     }
 }

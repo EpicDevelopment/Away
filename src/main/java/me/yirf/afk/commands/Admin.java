@@ -1,10 +1,9 @@
 package me.yirf.afk.commands;
 
-import me.clip.placeholderapi.libs.kyori.adventure.text.format.TextDecoration;
-import me.yirf.afk.Afk;
 import me.yirf.afk.data.Coins;
 import me.yirf.afk.data.Config;
 import me.yirf.afk.data.Messages;
+import me.yirf.afk.data.Shopper;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -19,18 +18,26 @@ import java.util.List;
 
 public class Admin implements TabExecutor {
 
-    private Coins coins;
-    private Config config;
-    private Messages messages;
+    Coins coins;
+    Config config;
+    Messages messages;
+    Shopper shopper;
 
-    public Admin(Coins coins, Config config, Messages messages) {
+    public Admin(Coins coins, Config config, Messages messages, Shopper shopper) {
         this.coins = coins;
         this.config = config;
         this.messages = messages;
+        this.shopper = shopper;
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+
+
+        if (args.length == 0){
+            sendUsage(commandSender);
+            return true;
+        }
 
         String subCommand = args[0].toLowerCase();
         OfflinePlayer target;
@@ -41,9 +48,10 @@ public class Admin implements TabExecutor {
                 long start = System.currentTimeMillis();
                 config.reload();
                 messages.reload();
+                shopper.reload();
                 long end = System.currentTimeMillis();
                 long duration = end - start;
-                commandSender.sendMessage(ChatColor.GREEN + "Config reloaded in " + ChatColor.UNDERLINE + ChatColor.DARK_GREEN + duration + "ms");
+                commandSender.sendMessage(ChatColor.GREEN + "All configs reloaded in " + ChatColor.UNDERLINE + ChatColor.DARK_GREEN + duration + "ms");
                 break;
             case "getcoins":
                 if (args.length != 2) {
@@ -51,7 +59,7 @@ public class Admin implements TabExecutor {
                     return true;
                 }
                 target = Bukkit.getOfflinePlayer(args[1]);
-                handleGetCoins(commandSender, target);
+                getCoins(commandSender, target);
                 break;
 
             case "setcoins":
@@ -72,9 +80,9 @@ public class Admin implements TabExecutor {
                 }
                 target = Bukkit.getOfflinePlayer(args[2]);
                 if (subCommand.equals("setcoins")) {
-                    handleSetCoins(commandSender, target, amount);
+                    setCoins(commandSender, target, amount);
                 } else {
-                    handleAddCoins(commandSender, target, amount);
+                    addCoins(commandSender, target, amount);
                 }
                 break;
 
@@ -82,7 +90,6 @@ public class Admin implements TabExecutor {
                 sendUsage(commandSender);
                 return true;
         }
-
         return true;
     }
 
@@ -93,7 +100,7 @@ public class Admin implements TabExecutor {
         sender.sendMessage(ChatColor.RED + "/away <reload>");
     }
 
-    private void handleGetCoins(CommandSender sender, OfflinePlayer target) {
+    private void getCoins(CommandSender sender, OfflinePlayer target) {
         try {
             if (!coins.playerExists(target.getUniqueId())) {
                 sender.sendMessage(ChatColor.RED + "Player not found");
@@ -107,7 +114,7 @@ public class Admin implements TabExecutor {
         }
     }
 
-    private void handleSetCoins(CommandSender sender, OfflinePlayer target, int amount) {
+    private void setCoins(CommandSender sender, OfflinePlayer target, int amount) {
         try {
             if (!coins.playerExists(target.getUniqueId())) {
                 coins.registerPlayer(target);
@@ -120,7 +127,7 @@ public class Admin implements TabExecutor {
         }
     }
 
-    private void handleAddCoins(CommandSender sender, OfflinePlayer target, int amount) {
+    private void addCoins(CommandSender sender, OfflinePlayer target, int amount) {
         try {
             if (!coins.playerExists(target.getUniqueId())) {
                 coins.registerPlayer(target);
@@ -142,13 +149,14 @@ public class Admin implements TabExecutor {
             tab.add("setcoins");
             tab.add("getcoins");
             tab.add("reload");
+            tab.add("help");
             return tab;
         }
 
         switch (args[0]) {
             case ("getcoins"):
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    tab.add(player.getName());
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    tab.add(p.getName());
                 }
                 return tab;
             case("setcoins"):
