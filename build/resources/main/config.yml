@@ -17,3 +17,4 @@ warp:
   pitch: 90
   yaw: 0
   world: "world"
+reward-command: "broadcast %player% has gained an afk reward!"

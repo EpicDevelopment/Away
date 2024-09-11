@@ -27,7 +27,7 @@ public class AfkExpansion extends PlaceholderExpansion {
     }
     @Override
     public String getIdentifier() {
-        return "afk";
+        return "away";
     }
     @Override
     public String getVersion() {

@@ -48,13 +48,28 @@ public class Config implements Color {
         return list;
     }
 
-    public Location getTeleport() {
-        Double x = config.getDouble("warp.x");
-        Double y = config.getDouble("warp.y");
-        Double z = config.getDouble("warp.z");
-        float pitch = (float) config.getDouble("warp.pitch", 0.0);
-        float yaw = (float) config.getDouble("warp.yaw", 0.0);
-        String wrld = config.getString("warp.world");
+    public Location buildLocation(String path) {
+        Double x = config.getDouble(path + ".x");
+        Double y = config.getDouble(path + ".y");
+        Double z = config.getDouble(path + ".z");
+        String wrld = config.getString("region.locations.world");
+        World world = (wrld != null) ? Bukkit.getWorld(wrld) : Bukkit.getWorld("world");
+        if (world == null) {
+            Bukkit.getLogger().severe("Unable to find proper world for afk warp in config.yml");
+            return null;
+        }
+
+        Location loc = new Location(world, x, y, z);
+        return loc;
+    }
+
+    public Location buildLocationWithView(String path) {
+        Double x = config.getDouble(path + ".x");
+        Double y = config.getDouble(path + ".y");
+        Double z = config.getDouble(path + ".z");
+        float pitch = (float) config.getDouble(path + ".pitch");
+        float yaw = (float) config.getDouble(path + ".yaw");
+        String wrld = config.getString(path + ".world");
         World world = (wrld != null) ? Bukkit.getWorld(wrld) : Bukkit.getWorld("world");
         if (world == null) {
             Bukkit.getLogger().severe("Unable to find proper world for afk warp in config.yml");

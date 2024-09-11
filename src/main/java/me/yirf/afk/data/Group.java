@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Group {
 
-    public  HashMap<UUID, Long> group;
+    public HashMap<UUID, Long> group = new HashMap<>();
 
     private Config config;
 

@@ -1,9 +1,13 @@
 package me.yirf.afk.utils;
 
+import me.yirf.afk.Afk;
 import org.bukkit.Location;
 
 public class RegionUtils {
-    public static boolean playerInCubiod(Location location, Location loc1, Location loc2) {
+    static Location loc1 = Afk.rgLoc1;
+    static Location loc2 = Afk.rgLoc2;
+
+    public static boolean playerInCubiod(Location location) {
         if (loc1 == null || loc2 == null) {
             return false;
         }

@@ -20,7 +20,7 @@ public class Teleport implements CommandExecutor {
             return false;
         }
         Player player = (Player) commandSender;
-        player.teleport(config.getTeleport());
+        player.teleport(config.buildLocationWithView("warp"));
         return false;
     }
 }
