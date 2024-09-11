@@ -51,15 +51,7 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 ## Contact
 
 Discord User - yirf#0000
+<br>
 Discord Server - Click Here(https://discord.gg/vandaldev)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-[contributors-shield]: https://img.shields.io/github/contributors/EpicDevelopment/Away.svg?style=for-the-badge
-[contributors-url]: https://github.com/EpicDevelopment/Away/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/EpicDevelopment/Away.svg?style=for-the-badge
-[forks-url]: https://github.com/EpicDevelopment/Away/network/members
-[issues-shield]: https://img.shields.io/github/issues/EpicDevelopment/Away.svg?style=for-the-badge
-[issues-url]: https://github.com/EpicDevelopment/Away/issues
-[license-shield]: https://img.shields.io/github/license/EpicDevelopment/Away.svg?style=for-the-badge
-[license-url]: https://github.com/EpicDevelopment/Away/blob/main/LICENSE.md
