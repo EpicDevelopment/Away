@@ -52,6 +52,6 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 
 Discord User - yirf#0000
 <br>
-Discord Server - Click Here(https://discord.gg/vandaldev)
+Discord Server - [Click Here](https://discord.gg/vandaldev)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
